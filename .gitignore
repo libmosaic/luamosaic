@@ -1,0 +1,11 @@
+# text backups
+*~
+*.swp
+# build stuff
+*.so
+*.os
+# scons stuff
+*scons*
+# ctags/cscope
+cscope*
+ctags
