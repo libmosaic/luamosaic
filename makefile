@@ -4,8 +4,11 @@ src = luamosaic.c
 SHARED_OBJ = mosaic.so
 PIC_OBJ = mosaic.os
 
+# check out if the lua package is named 'lua5.2' or just 'lua', for i've seen both in my life
+lualib = $(shell if pkg-config --list-all | grep lua5.2; then echo "lua5.2"; else echo "lua"; fi)
+
 CC = gcc
-LINKS = $(shell pkg-config --cflags lua5.2 mosaic mosaic_stream_io)
+LINKS = $(shell pkg-config --cflags --libs lua $(lualib) mosaic mosaic_stream_io)
 CFLAGS = -Wall -g -O2 $(LINKS)
 
 PIC_CFLAGS = $(CFLAGS) -fPIC
@@ -16,6 +19,10 @@ all : PIC
 
 PIC : $(src)
 	$(CC) -o $(PIC_OBJ) -c $(PIC_CFLAGS) $<
+
+
+run :
+	@lua teste.lua
 
 clean :
 	$(RM) *~ $(SHARED_OBJECT) $(PIC_OBJ)
