@@ -8,7 +8,7 @@ PIC_OBJ = mosaic.os
 lualib = $(shell if pkg-config --list-all | grep lua5.2; then echo "lua5.2"; else echo "lua"; fi)
 
 CC = gcc
-LINKS = $(shell pkg-config --cflags --libs lua $(lualib) mosaic mosaic_stream_io)
+LINKS = $(shell pkg-config --cflags --libs lua $(lualib) mosaic mosaic_stream_io mosaic_color)
 CFLAGS = -Wall -g -O2 $(LINKS)
 
 PIC_CFLAGS = $(CFLAGS) -fPIC

@@ -9,3 +9,7 @@ print (a:GetCh (0, 0))
 
 a:SetAttr (0, 0, 3)
 print (a:GetAttr (0, 0))
+
+mosaic.color.Tcolor (mosaic.color.CN)
+print 'oi, galera =]'
+mosaic.color.Tcolor (mosaic.color.Normal)

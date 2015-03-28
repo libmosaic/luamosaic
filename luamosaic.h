@@ -9,6 +9,7 @@
 #include <lualib.h>
 // mosaic
 #include <mosaic.h>
+#include <color.h>
 #include <stream_io.h>
 
 #define MOSAIC_METATABLE "mosaic"

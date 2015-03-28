@@ -131,7 +131,39 @@ static int lResizeMOSAIC (lua_State *L) {
 }
 
 
-/// The functions to be registered
+/// Register colors in table on top of the stack		[0, 0, -]
+void lRegisterColors (lua_State *L) {
+	const char *color_names[] = {
+		"Normal", "NBk", "NR", "NG", "NY", "NBl", "NM",	"NC", "NW",
+		"BkN", "BkBk", "BkR", "BkG", "BkY", "BkBl", "BkM", "BkC", "BkW",
+		"RN", "RBk", "RR", "RG", "RY", "RBl", "RM", "RC", "RW",
+		"GN", "GBk", "GR", "GG", "GY", "GBl", "GM", "GC", "GW",
+		"YN", "YBk", "YR", "YG", "YY", "YBl", "YM", "YC", "YW",
+		"BlN", "BlBk", "BlR", "BlG", "BlY", "BlBl", "BlM", "BlC", "BlW",
+		"MN", "MBk", "MR", "MG", "MY", "MBl", "MM", "MC", "MW",
+		"CN", "CBk", "CR", "CG", "CY", "CBl", "CM", "CC", "CW",
+		"WN", "WBk", "WR", "WG", "WY", "WBl", "WM", "WC", "WW"
+	};
+
+	int i;
+	for (i = 0; i < MAX_COLORS; i++) {
+		lua_pushinteger (L, i);
+		lua_setfield (L, -2, color_names[i]);
+	}
+}
+
+
+static int lTcolor (lua_State *L) {
+	mos_attr color = luaL_checkint (L, 1);
+	mos_attr bold = lua_isnoneornil (L, 2) ? 0 : BOLD;
+
+	Tcolor (color | bold);
+	
+	return 0;
+}
+
+
+/// The Mosaic functions to be registered
 const struct luaL_Reg mosaiclib [] = {
 	{"New", lNewMOSAIC},
 	{"GetCh", lmosGetCh},
@@ -140,6 +172,17 @@ const struct luaL_Reg mosaiclib [] = {
 	{"SetAttr", lmosSetAttr},
 	{"Resize", lResizeMOSAIC},
 	{"__gc", lFreeMOSAIC},
+	{NULL, NULL}
+};
+
+/// The Color functions to be registered
+const struct luaL_Reg colorlib [] = {
+	{"Tcolor", lTcolor},
+	{NULL, NULL}
+};
+
+/// The Color functions to be registered
+const struct luaL_Reg stream_iolib [] = {
 	{NULL, NULL}
 };
 
@@ -154,5 +197,18 @@ int luaopen_mosaic (lua_State *L) {
 	// and let's put a nice name in our table
 	lua_pushliteral (L, MOSAIC_METATABLE);
 	lua_setfield (L, -2, "__metatable");
+
+	// now, push the auxiliary modules
+	// IO
+	lua_newtable (L);
+	luaL_setfuncs (L, stream_iolib, 0);
+	lua_setfield (L, -2, "io");
+	// COLOR
+	lua_newtable (L);
+	luaL_setfuncs (L, colorlib, 0);
+	// register the colors from "enum color", each as it's name
+	lRegisterColors (L);
+	lua_setfield (L, -2, "color");
+
 	return 1;
 }
