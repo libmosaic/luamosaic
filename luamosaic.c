@@ -2,6 +2,7 @@
  */
 
 #include "luamosaic.h"
+#include <string.h>
 
 /* luamosaic.h stuff */
 static MOSAICptr checkMOSAIC (lua_State *L, int index) {
@@ -42,7 +43,7 @@ static int lmosSetCh (lua_State *L) {
 	int y = luaL_checkint (L, 2);
 	int x = luaL_checkint (L, 3);
 	char * new_char = luaL_checkstring (L, 4);
-	int ret = mosSetCh (mos, y, x, new_char[0]);
+	int ret = mosSetCh (mos, y - 1, x - 1, new_char[0]);
 	// all right, s return the char added
 	if (ret) {
 		lua_pushlstring (L, new_char, 1);
@@ -60,7 +61,7 @@ static int lmosGetCh (lua_State *L) {
 	MOSAICptr mos = checkMOSAIC (L, 1);
 	int y = luaL_checkint (L, 2);
 	int x = luaL_checkint (L, 3);
-	mos_char ret = mosGetCh (mos, y, x);
+	mos_char ret = mosGetCh (mos, y - 1, x - 1);
 	// all right, return the char got
 	if (ret) {
 		lua_pushlstring (L, (char *) &ret, 1);
@@ -79,7 +80,7 @@ static int lmosSetAttr (lua_State *L) {
 	int y = luaL_checkint (L, 2);
 	int x = luaL_checkint (L, 3);
 	mos_attr new_attr = luaL_checkint (L, 4);
-	int ret = mosSetAttr (mos, y, x, new_attr);
+	int ret = mosSetAttr (mos, y - 1, x - 1, new_attr);
 	// all right, s return the char added
 	if (ret) {
 		lua_pushinteger (L, new_attr);
@@ -97,7 +98,7 @@ static int lmosGetAttr (lua_State *L) {
 	MOSAICptr mos = checkMOSAIC (L, 1);
 	int y = luaL_checkint (L, 2);
 	int x = luaL_checkint (L, 3);
-	mos_attr ret = mosGetAttr (mos, y, x);
+	mos_attr ret = mosGetAttr (mos, y - 1, x - 1);
 	// all right, return the char got
 	if (ret) {
 		lua_pushinteger (L, ret);
@@ -109,6 +110,18 @@ static int lmosGetAttr (lua_State *L) {
 		lua_pushliteral (L, "Index out of bounds");
 		return 2;
 	}
+}
+
+static int lmosGetWidth (lua_State *L) {
+	MOSAICptr mos = checkMOSAIC (L, 1);
+	lua_pushinteger (L, mos->width);
+	return 1;
+}
+
+static int lmosGetHeight (lua_State *L) {
+	MOSAICptr mos = checkMOSAIC (L, 1);
+	lua_pushinteger (L, mos->height);
+	return 1;
 }
 
 static int lResizeMOSAIC (lua_State *L) {
@@ -130,7 +143,7 @@ static int lResizeMOSAIC (lua_State *L) {
 	}
 }
 
-
+/* MOSAIC.COLOR! */
 /// Register colors in table on top of the stack		[0, 0, -]
 void lRegisterColors (lua_State *L) {
 	const char *color_names[] = {
@@ -152,7 +165,6 @@ void lRegisterColors (lua_State *L) {
 	}
 }
 
-
 static int lTcolor (lua_State *L) {
 	mos_attr color = luaL_checkint (L, 1);
 	mos_attr bold = lua_isnoneornil (L, 2) ? 0 : BOLD;
@@ -162,6 +174,42 @@ static int lTcolor (lua_State *L) {
 	return 0;
 }
 
+/* MOSAIC.IO */
+static int lSaveMOSAIC (lua_State *L) {
+	MOSAICptr mos = checkMOSAIC (L, 1);
+	char * file_name = luaL_checkstring (L, 2);
+
+	int ret = SaveMOSAIC (mos, file_name);
+
+	if (!ret) {
+		// no errors
+		lua_pushboolean (L, 1);
+		return 1;
+	}
+	else {
+		lua_pushnil (L);
+		lua_pushstring (L, strerror (ret));
+		return 2;
+	}
+}
+
+static int lLoadMOSAIC (lua_State *L) {
+	char * file_name = luaL_checkstring (L, 1);
+
+	MOSAIC * new = NewMOSAIC (0, 0);
+	int ret = LoadMOSAIC (new, file_name);
+
+	if (ret == 0 || ret == EUNKNSTRGFMT || ret == ENODIMENSIONS) {
+		// no errors
+		pushMOSAIC (L, new);
+		return 1;
+	}
+	else {
+		lua_pushnil (L);
+		lua_pushstring (L, strerror (ret));
+		return 2;
+	}
+}
 
 /// The Mosaic functions to be registered
 const struct luaL_Reg mosaiclib [] = {
@@ -170,6 +218,8 @@ const struct luaL_Reg mosaiclib [] = {
 	{"SetCh", lmosSetCh},
 	{"GetAttr", lmosGetAttr},
 	{"SetAttr", lmosSetAttr},
+	{"GetWidth", lmosGetWidth},
+	{"GetHeight", lmosGetHeight},
 	{"Resize", lResizeMOSAIC},
 	{"__gc", lFreeMOSAIC},
 	{NULL, NULL}
@@ -181,8 +231,10 @@ const struct luaL_Reg colorlib [] = {
 	{NULL, NULL}
 };
 
-/// The Color functions to be registered
+/// The stream_io functions to be registered
 const struct luaL_Reg stream_iolib [] = {
+	{"Save", lSaveMOSAIC},
+	{"Load", lLoadMOSAIC},
 	{NULL, NULL}
 };
 
