@@ -26,8 +26,8 @@ static MOSAICptr * pushMOSAIC (lua_State *L, MOSAICptr mos) {
 
 /* And now, methods we will register */
 static int lNewMOSAIC (lua_State *L) {
-	int height = luaL_checkint (L, 1);
-	int width = luaL_checkint (L, 2);
+	int height = luaL_checkinteger (L, 1);
+	int width = luaL_checkinteger (L, 2);
 	pushMOSAIC (L, NewMOSAIC (height, width));
 	return 1;
 }
@@ -40,8 +40,8 @@ static int lFreeMOSAIC (lua_State *L) {
 
 static int lmosSetCh (lua_State *L) {
 	MOSAICptr mos = checkMOSAIC (L, 1);
-	int y = luaL_checkint (L, 2);
-	int x = luaL_checkint (L, 3);
+	int y = luaL_checkinteger (L, 2);
+	int x = luaL_checkinteger (L, 3);
 	char * new_char = luaL_checkstring (L, 4);
 	int ret = mosSetCh (mos, y - 1, x - 1, new_char[0]);
 	// all right, s return the char added
@@ -59,8 +59,8 @@ static int lmosSetCh (lua_State *L) {
 
 static int lmosGetCh (lua_State *L) {
 	MOSAICptr mos = checkMOSAIC (L, 1);
-	int y = luaL_checkint (L, 2);
-	int x = luaL_checkint (L, 3);
+	int y = luaL_checkinteger (L, 2);
+	int x = luaL_checkinteger (L, 3);
 	mos_char ret = mosGetCh (mos, y - 1, x - 1);
 	// all right, return the char got
 	if (ret) {
@@ -77,9 +77,9 @@ static int lmosGetCh (lua_State *L) {
 
 static int lmosSetAttr (lua_State *L) {
 	MOSAICptr mos = checkMOSAIC (L, 1);
-	int y = luaL_checkint (L, 2);
-	int x = luaL_checkint (L, 3);
-	mos_attr new_attr = luaL_checkint (L, 4);
+	int y = luaL_checkinteger (L, 2);
+	int x = luaL_checkinteger (L, 3);
+	mos_attr new_attr = luaL_checkinteger (L, 4);
 	int ret = mosSetAttr (mos, y - 1, x - 1, new_attr);
 	// all right, s return the char added
 	if (ret) {
@@ -96,20 +96,14 @@ static int lmosSetAttr (lua_State *L) {
 
 static int lmosGetAttr (lua_State *L) {
 	MOSAICptr mos = checkMOSAIC (L, 1);
-	int y = luaL_checkint (L, 2);
-	int x = luaL_checkint (L, 3);
+	int y = luaL_checkinteger (L, 2);
+	int x = luaL_checkinteger (L, 3);
 	mos_attr ret = mosGetAttr (mos, y - 1, x - 1);
-	// all right, return the char got
-	if (ret) {
-		lua_pushinteger (L, ret);
-		return 1;
-	}
-	// out of bounds, push nil!
-	else {
-		lua_pushnil (L);
-		lua_pushliteral (L, "Index out of bounds");
-		return 2;
-	}
+
+	// pushes result even if out of bounds, as mosGetAttr
+	// returns Normal in these cases
+	lua_pushinteger (L, ret);
+	return 1;
 }
 
 static int lmosGetWidth (lua_State *L) {
@@ -126,8 +120,8 @@ static int lmosGetHeight (lua_State *L) {
 
 static int lResizeMOSAIC (lua_State *L) {
 	MOSAICptr mos = checkMOSAIC (L, 1);
-	int height = luaL_checkint (L, 2);
-	int width = luaL_checkint (L, 3);
+	int height = luaL_checkinteger (L, 2);
+	int width = luaL_checkinteger (L, 3);
 	int ret = ResizeMOSAIC (mos, height, width);
 	// no problems
 	if (!ret) {
@@ -141,6 +135,14 @@ static int lResizeMOSAIC (lua_State *L) {
 		lua_pushliteral (L, "Resize allocation error!");
 		return 2;
 	}
+}
+
+static int lOutOfBounds (lua_State *L) {
+	MOSAICptr mos = checkMOSAIC (L, 1);
+	int y = luaL_checkinteger (L, 2);
+	int x = luaL_checkinteger (L, 3);
+	lua_pushinteger (L, mosOutOfBoundaries (mos, y, x));
+	return 1;
 }
 
 /* MOSAIC.COLOR! */
@@ -166,12 +168,24 @@ void lRegisterColors (lua_State *L) {
 }
 
 static int lTcolor (lua_State *L) {
-	mos_attr color = luaL_checkint (L, 1);
+	mos_attr color = luaL_checkinteger (L, 1);
 	mos_attr bold = lua_isnoneornil (L, 2) ? 0 : BOLD;
 
 	Tcolor (color | bold);
 	
 	return 0;
+}
+
+static int lGetFore (lua_State *L) {
+	mos_attr color = luaL_checkinteger (L, 1);
+	lua_pushinteger (L, GetFore (color));
+	return 1;
+}
+
+static int lGetBack (lua_State *L) {
+	mos_attr color = luaL_checkinteger (L, 1);
+	lua_pushinteger (L, GetBack (color));
+	return 1;
 }
 
 /* MOSAIC.IO */
@@ -221,6 +235,7 @@ const struct luaL_Reg mosaiclib [] = {
 	{"GetWidth", lmosGetWidth},
 	{"GetHeight", lmosGetHeight},
 	{"Resize", lResizeMOSAIC},
+	{"OutOfBounds", lOutOfBounds},
 	{"__gc", lFreeMOSAIC},
 	{NULL, NULL}
 };
@@ -228,6 +243,8 @@ const struct luaL_Reg mosaiclib [] = {
 /// The Color functions to be registered
 const struct luaL_Reg colorlib [] = {
 	{"Tcolor", lTcolor},
+	{"GetFore", lGetFore},
+	{"GetBack", lGetBack},
 	{NULL, NULL}
 };
 

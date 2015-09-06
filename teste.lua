@@ -23,7 +23,9 @@ mos = assert (mosaic.io.Load ("color.mosi"))
 
 for i = 1, mos:GetHeight () do
 	for j = 1, mos:GetWidth () do
+		color.Tcolor (mos:GetAttr (i, j))
 		io.write (mos:GetCh (i, j))
 	end
+	color.Tcolor (color.Normal)
 	io.write '\n'
 end
