@@ -21,11 +21,29 @@ color.Tcolor (color.Normal)
 print 'um moscat simplão'
 mos = assert (mosaic.io.Load ("color.mosi"))
 
+print 'agora um SubMOSAIC'
+
+sub = mos:Sub (5, 5, 3, 3)
+
+sub:SetCh (3, 3, 'c')
+
+for i = 1, sub:GetHeight () do
+	for j = 1, sub:GetWidth () do
+		color.Tcolor (sub:GetAttr (i, j))
+		io.write (sub:GetCh (i, j))
+	end
+	color.Tcolor (color.Normal)
+	print ()
+end
+
+---------------------------------------------------
+
 for i = 1, mos:GetHeight () do
 	for j = 1, mos:GetWidth () do
 		color.Tcolor (mos:GetAttr (i, j))
 		io.write (mos:GetCh (i, j))
 	end
 	color.Tcolor (color.Normal)
-	io.write '\n'
+	print ()
 end
+

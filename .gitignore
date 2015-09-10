@@ -6,6 +6,7 @@
 *.os
 # scons stuff
 *scons*
+build
 # ctags/cscope
 cscope*
 ctags

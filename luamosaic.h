@@ -20,7 +20,7 @@ typedef MOSAIC * MOSAICptr;
 
 #define checkmosaic(L) \
 	(Mosaic *) luaL_checkudate ((L), 1, MOSAIC_METATABLE)
-/// Auxiliary function for getting a Mosaic, checking it's type/metatable
+/// Auxiliary function for getting a Mosaic, checking it's type/metatable	[-0, +0, -]
 static MOSAICptr checkMOSAIC (lua_State *L, int index);
-/// Auxiliary function for pushing a Mosaic to the Lua Stack (as light userdata)
+/// Auxiliary function for pushing a Mosaic to the Lua Stack (as light userdata)	[-0, +1, -]
 static MOSAICptr * pushMOSAIC (lua_State *L, MOSAICptr mos);

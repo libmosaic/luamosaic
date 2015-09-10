@@ -32,6 +32,27 @@ static int lNewMOSAIC (lua_State *L) {
 	return 1;
 }
 
+static int lSubMOSAIC (lua_State *L) {
+	MOSAICptr mos = checkMOSAIC (L, 1);
+	int height = luaL_checkinteger (L, 2);
+	int width = luaL_checkinteger (L, 3);
+	int begin_y = luaL_checkinteger (L, 4);
+	int begin_x = luaL_checkinteger (L, 5);
+
+	MOSAICptr sub = SubMOSAIC (mos, height, width, begin_y - 1, begin_x - 1);
+
+	if (sub) {
+		pushMOSAIC (L, sub);
+		return 1;
+	}
+	// error
+	else {
+		lua_pushnil (L);
+		lua_pushliteral (L, "Error in getting SubMOSAIC");
+		return 2;
+	}
+}
+
 static int lFreeMOSAIC (lua_State *L) {
 	MOSAICptr mos = checkMOSAIC (L, 1);
 	FreeMOSAIC (mos);
@@ -146,7 +167,7 @@ static int lOutOfBounds (lua_State *L) {
 }
 
 /* MOSAIC.COLOR! */
-/// Register colors in table on top of the stack		[0, 0, -]
+/// Register colors in table on top of the stack		[-0, +0, -]
 void lRegisterColors (lua_State *L) {
 	const char *color_names[] = {
 		"Normal", "NBk", "NR", "NG", "NY", "NBl", "NM",	"NC", "NW",
@@ -228,6 +249,7 @@ static int lLoadMOSAIC (lua_State *L) {
 /// The Mosaic functions to be registered
 const struct luaL_Reg mosaiclib [] = {
 	{"New", lNewMOSAIC},
+	{"Sub", lSubMOSAIC},
 	{"GetCh", lmosGetCh},
 	{"SetCh", lmosSetCh},
 	{"GetAttr", lmosGetAttr},
