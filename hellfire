@@ -1,5 +1,6 @@
 hell.outdir = 'build'
-hell.help = [[Lua wrapper for the Mosaic asc art library]]
+hell.help = [[Lua wrapper for the Mosaic asc art library
+Call with `debug=1` for a debug build]]
 
 luaVersion = luaVersion or _VERSION:match ('Lua (.+)')
 lualib = utils.checkPkgConfig ('lua' .. luaVersion) or 'lua'
@@ -9,7 +10,7 @@ lib = c.shared {
 	deps = {'luamosaic.h'},
 	links = {'mosaic', 'mosaic_color', 'mosaic_stream_io', lualib},
 	includes = 'mosaic',
-	flags = '-Wall -g -O2',
+	flags = '-Wall -O2' .. (debug == '1' and ' -g' or ''),
 	output = 'mosaic.so'
 }
 

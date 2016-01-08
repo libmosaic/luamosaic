@@ -8,14 +8,19 @@ PIC_OBJ = mosaic.os
 lualib = $(shell if pkg-config --list-all | grep lua5.2; then echo "lua5.2"; else echo "lua"; fi)
 
 CC = gcc
-LINKS = $(shell pkg-config --cflags --libs $(lualib) mosaic mosaic_stream_io mosaic_color)
-CFLAGS = -Wall -g -O2 $(LINKS)
+INCLUDES = $(shell pkg-config --cflags $(lualib) mosaic mosaic_stream_io mosaic_color)
+LINKS = $(shell pkg-config --libs $(lualib) mosaic mosaic_stream_io mosaic_color)
+CFLAGS = -Wall -O2 $(INCLUDES)
 
 PIC_CFLAGS = $(CFLAGS) -fPIC
 SHARED_CFLAGS = $(CFLAGS) -shared
 
 all : PIC
-	$(CC) -o $(SHARED_OBJ) $(SHARED_CFLAGS) $(PIC_OBJ)
+	$(CC) -o $(SHARED_OBJ) $(SHARED_CFLAGS) $(PIC_OBJ) $(LINKS)
+
+# debug 
+debug : CFLAGS += -g
+debug : all
 
 PIC : $(src)
 	$(CC) -o $(PIC_OBJ) -c $(PIC_CFLAGS) $<

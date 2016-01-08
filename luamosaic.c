@@ -63,7 +63,7 @@ static int lmosSetCh (lua_State *L) {
 	MOSAICptr mos = checkMOSAIC (L, 1);
 	int y = luaL_checkinteger (L, 2);
 	int x = luaL_checkinteger (L, 3);
-	char * new_char = luaL_checkstring (L, 4);
+	const char * new_char = luaL_checkstring (L, 4);
 	int ret = mosSetCh (mos, y - 1, x - 1, new_char[0]);
 	// all right, s return the char added
 	if (ret) {
@@ -212,7 +212,7 @@ static int lGetBack (lua_State *L) {
 /* MOSAIC.IO */
 static int lSaveMOSAIC (lua_State *L) {
 	MOSAICptr mos = checkMOSAIC (L, 1);
-	char * file_name = luaL_checkstring (L, 2);
+	const char * file_name = luaL_checkstring (L, 2);
 
 	int ret = SaveMOSAIC (mos, file_name);
 
@@ -229,7 +229,7 @@ static int lSaveMOSAIC (lua_State *L) {
 }
 
 static int lLoadMOSAIC (lua_State *L) {
-	char * file_name = luaL_checkstring (L, 1);
+	const char * file_name = luaL_checkstring (L, 1);
 
 	MOSAIC * new = NewMOSAIC (0, 0);
 	int ret = LoadMOSAIC (new, file_name);
